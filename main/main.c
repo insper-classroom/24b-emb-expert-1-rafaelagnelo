@@ -32,8 +32,16 @@ int main() {
 
     while (true) {
         uint16_t valor = adc_read();
-        char dados[100];
-        sprintf(dados, "POST /data HTTP/1.1\r\nHost: IP_DO_SERVIDOR:5000\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n{\"valor\": %d}", strlen(dados), valor);
+        char dados[200]; // Aumentamos o tamanho do buffer para garantir que não exceda.
+
+        // Criamos a string JSON para o dado
+        snprintf(dados, sizeof(dados),
+                 "POST /data HTTP/1.1\r\n"
+                 "Host: IP_DO_SERVIDOR:5000\r\n"
+                 "Content-Type: application/json\r\n"
+                 "Content-Length: %d\r\n\r\n"
+                 "{\"valor\": %d}", 
+                 strlen("{\"valor\": %d}") + 10, valor);
 
         int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
         struct sockaddr_in servidor;
@@ -41,8 +49,11 @@ int main() {
         servidor.sin_addr.s_addr = inet_addr("IP_DO_SERVIDOR");
         servidor.sin_port = htons(5000);
 
-        connect(socket_fd, (struct sockaddr*)&servidor, sizeof(servidor));
-        write(socket_fd, dados, strlen(dados));
+        if (connect(socket_fd, (struct sockaddr*)&servidor, sizeof(servidor)) == 0) {
+            write(socket_fd, dados, strlen(dados));
+        } else {
+            printf("Erro ao conectar ao servidor\n");
+        }
         close(socket_fd);
 
         sleep_ms(10000);
@@ -51,4 +62,3 @@ int main() {
     cyw43_arch_deinit();
     return 0;
 }
-
