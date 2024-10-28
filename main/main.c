@@ -32,9 +32,8 @@ int main() {
 
     while (true) {
         uint16_t valor = adc_read();
-        char dados[200]; // Aumentamos o tamanho do buffer para garantir que não exceda.
+        char dados[200]; // Buffer aumentado para evitar estouro.
 
-        // Criamos a string JSON para o dado
         snprintf(dados, sizeof(dados),
                  "POST /data HTTP/1.1\r\n"
                  "Host: IP_DO_SERVIDOR:5000\r\n"
